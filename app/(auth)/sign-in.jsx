@@ -1,5 +1,13 @@
-import { StyleSheet, Text, View, Image } from "react-native";
-import {useState} from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { useState } from "react";
+import { Link } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   ScrollView,
@@ -7,21 +15,40 @@ import {
 } from "react-native-gesture-handler";
 import { images } from "../../constants";
 import FormField from "../components/FormField";
+import CustomButton from "../customButton";
+import { signIn } from "../../lib/appwrite";
 
 const SignIn = () => {
   const [form, setForm] = useState({ email: "", password: "" });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submit = async () => {
+    if (!form.email || !form.password) {
+      Alert.alert("Error", "Please fill in all the fields");
+    }
+    setIsSubmitting(true);
+    try {
+      await signIn(form.email, form.password);
+      // Set it to global state
+      router.replace("/home");
+    } catch (error) {
+      Alert.alert("Error", error.message);
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <GestureHandlerRootView>
       <SafeAreaView className="bg-primary h-full">
         <ScrollView>
-          <View className="w-full justify-center h-full px-4 my-6">
+          <View className="w-full justify-center h-[85vh] px-4 my-6">
             <Image
               source={images.logo}
               resizeMode="contain"
               className="w-[115px] h-[35px] "
             />
-            <Text className="text-2xl text-white text-semibold mt-10 font-psemibold ">
+            <Text className="text-2xl text-white text-semibold mt-10 mb-5 font-psemibold ">
               Log in to Aora
             </Text>
             <FormField
@@ -38,6 +65,22 @@ const SignIn = () => {
               otherStyles="mt-7"
               keyBoardType="email-address"
             />
+
+            <CustomButton
+              title="Sign in"
+              handlePress={submit}
+              containerStyle="mt-7"
+              isLoading={isSubmitting}
+            />
+
+            <View className="justify-center pt-5 flex-row gap-2">
+              <Text className="text-lg text-secondary font-pregular">
+                Don't have an account?
+              </Text>
+              <Link href="/sign-up" className="text-lg  font-psemibold">
+                Sign Up
+              </Link>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
